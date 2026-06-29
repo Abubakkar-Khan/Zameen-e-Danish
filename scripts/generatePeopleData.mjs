@@ -1,7 +1,16 @@
 import fs from "node:fs/promises";
 
 const entries = [
+  ["Muhammad_Ali_Jinnah", "Quaid-e-Azam Muhammad Ali Jinnah", "Political Leader", "Sindh", "Karachi", [24.8607, 67.0011], 100, "Pre-1947", "قائد اعظم محمد علی جناح"],
   ["Muhammad_Iqbal", "Allama Muhammad Iqbal", "Poet", "Punjab", "Sialkot", [32.4945, 74.5229], 99, "Pre-1947", "علامہ محمد اقبال"],
+  ["Liaquat_Ali_Khan", "Liaquat Ali Khan", "Political Leader", "Punjab", "Karnal/Lahore", [31.5204, 74.3587], 93, "Pre-1947", "لیاقت علی خان"],
+  ["Zulfikar_Ali_Bhutto", "Zulfikar Ali Bhutto", "Political Leader", "Sindh", "Larkana", [27.557, 68.2028], 91, "1971-2000", "ذوالفقار علی بھٹو"],
+  ["Khan_Abdul_Ghaffar_Khan", "Abdul Ghaffar Khan", "Social Reformer", "Khyber Pakhtunkhwa", "Charsadda", [34.1497, 71.7428], 89, "Pre-1947", "عبدالغفار خان"],
+  ["Sir_Syed_Ahmad_Khan", "Sir Syed Ahmad Khan", "Educator", "Punjab", "Aligarh/Lahore", [31.5204, 74.3587], 88, "Pre-1947", "سر سید احمد خان"],
+  ["Ayub_Khan_(general)", "Ayub Khan", "Political Leader", "Khyber Pakhtunkhwa", "Rehana", [34.06, 72.63], 77, "1947-1970", "ایوب خان"],
+  ["Pervez_Musharraf", "Pervez Musharraf", "Political Leader", "Sindh", "Karachi", [24.8607, 67.0011], 74, "2001-Present", "پرویز مشرف"],
+  ["Nawaz_Sharif", "Nawaz Sharif", "Political Leader", "Punjab", "Lahore", [31.5204, 74.3587], 73, "2001-Present", "نواز شریف"],
+  ["Shehbaz_Sharif", "Shehbaz Sharif", "Political Leader", "Punjab", "Lahore", [31.5204, 74.3587], 68, "2001-Present", "شہباز شریف"],
   ["Abdus_Salam", "Abdus Salam", "Scientist", "Punjab", "Jhang", [31.2681, 72.3181], 98, "1947-1970", "عبد السلام"],
   ["Abdul_Sattar_Edhi", "Abdul Sattar Edhi", "Humanitarian", "Sindh", "Karachi", [24.8607, 67.0011], 97, "1971-2000", "عبد الستار ایدھی"],
   ["Fatima_Jinnah", "Fatima Jinnah", "Political Leader", "Sindh", "Karachi", [24.8849, 67.0444], 94, "Pre-1947", "فاطمہ جناح"],
@@ -116,6 +125,90 @@ const entries = [
   ["Raja_Farooq_Haider", "Raja Farooq Haider", "Political Leader", "Azad Kashmir", "Muzaffarabad", [34.37, 73.4711], 51, "2001-Present", "راجہ فاروق حیدر"],
 ];
 
+const extraEntries = [
+  ["Babar_Azam", "Babar Azam", "Athlete", "Punjab", "Lahore", [31.5204, 74.3587], 82, "2001-Present"],
+  ["Arshad_Nadeem", "Arshad Nadeem", "Athlete", "Punjab", "Mian Channu", [30.44, 72.35], 84, "2001-Present"],
+  ["Shaheen_Afridi", "Shaheen Afridi", "Athlete", "Khyber Pakhtunkhwa", "Landi Kotal", [34.1013, 71.1466], 70, "2001-Present"],
+  ["Naseem_Shah", "Naseem Shah", "Athlete", "Khyber Pakhtunkhwa", "Lower Dir", [34.9167, 71.8333], 62, "2001-Present"],
+  ["Younis_Khan", "Younis Khan", "Athlete", "Khyber Pakhtunkhwa", "Mardan", [34.1986, 72.0404], 72, "2001-Present"],
+  ["Misbah-ul-Haq", "Misbah-ul-Haq", "Athlete", "Punjab", "Mianwali", [32.5839, 71.537], 68, "2001-Present"],
+  ["Saeed_Anwar", "Saeed Anwar", "Athlete", "Sindh", "Karachi", [24.8607, 67.0011], 66, "1971-2000"],
+  ["Hanif_Mohammad", "Hanif Mohammad", "Athlete", "Sindh", "Karachi", [24.8607, 67.0011], 67, "1947-1970"],
+  ["Zaheer_Abbas", "Zaheer Abbas", "Athlete", "Punjab", "Sialkot", [32.4945, 74.5229], 65, "1971-2000"],
+  ["Nida_Dar", "Nida Dar", "Athlete", "Punjab", "Gujranwala", [32.1877, 74.1945], 56, "2001-Present"],
+  ["Bismah_Maroof", "Bismah Maroof", "Athlete", "Punjab", "Lahore", [31.5204, 74.3587], 55, "2001-Present"],
+  ["Mahira_Khan", "Mahira Khan", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 72, "2001-Present"],
+  ["Fawad_Khan", "Fawad Khan", "Actor", "Punjab", "Lahore", [31.5204, 74.3587], 70, "2001-Present"],
+  ["Sajal_Aly", "Sajal Aly", "Actor", "Punjab", "Lahore", [31.5204, 74.3587], 61, "2001-Present"],
+  ["Humayun_Saeed", "Humayun Saeed", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 63, "2001-Present"],
+  ["Mehwish_Hayat", "Mehwish Hayat", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 62, "2001-Present"],
+  ["Hania_Aamir", "Hania Aamir", "Actor", "Punjab", "Rawalpindi", [33.5651, 73.0169], 57, "2001-Present"],
+  ["Iqra_Aziz", "Iqra Aziz", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 55, "2001-Present"],
+  ["Mawra_Hocane", "Mawra Hocane", "Actor", "Islamabad", "Islamabad", [33.6844, 73.0479], 54, "2001-Present"],
+  ["Sanam_Saeed", "Sanam Saeed", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 56, "2001-Present"],
+  ["Adnan_Siddiqui", "Adnan Siddiqui", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 55, "2001-Present"],
+  ["Bilal_Abbas_Khan", "Bilal Abbas Khan", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 52, "2001-Present"],
+  ["Ahad_Raza_Mir", "Ahad Raza Mir", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 53, "2001-Present"],
+  ["Ayeza_Khan", "Ayeza Khan", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 54, "2001-Present"],
+  ["Maya_Ali", "Maya Ali", "Actor", "Punjab", "Lahore", [31.5204, 74.3587], 54, "2001-Present"],
+  ["Bushra_Ansari", "Bushra Ansari", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 64, "1971-2000"],
+  ["Marina_Khan", "Marina Khan", "Actor", "Khyber Pakhtunkhwa", "Peshawar", [34.0151, 71.5249], 58, "1971-2000"],
+  ["Hadiqa_Kiani", "Hadiqa Kiani", "Musician", "Punjab", "Rawalpindi", [33.5651, 73.0169], 63, "2001-Present"],
+  ["Momina_Mustehsan", "Momina Mustehsan", "Musician", "Punjab", "Lahore", [31.5204, 74.3587], 52, "2001-Present"],
+  ["Aima_Baig", "Aima Baig", "Musician", "Punjab", "Lahore", [31.5204, 74.3587], 51, "2001-Present"],
+  ["Ali_Sethi", "Ali Sethi", "Musician", "Punjab", "Lahore", [31.5204, 74.3587], 60, "2001-Present"],
+  ["Meesha_Shafi", "Meesha Shafi", "Musician", "Punjab", "Lahore", [31.5204, 74.3587], 54, "2001-Present"],
+  ["Irfan_Junejo", "Irfan Junejo", "Creator", "Sindh", "Karachi", [24.8607, 67.0011], 47, "2001-Present"],
+  ["Ducky_Bhai", "Ducky Bhai", "Creator", "Punjab", "Lahore", [31.5204, 74.3587], 46, "2001-Present"],
+  ["Zaid_Ali", "Zaid Ali", "Creator", "Punjab", "Lahore", [31.5204, 74.3587], 45, "2001-Present"],
+  ["Nadir_Ali", "Nadir Ali", "Creator", "Sindh", "Karachi", [24.8607, 67.0011], 45, "2001-Present"],
+  ["Shahid_Khan", "Shahid Khan", "Entrepreneur", "Punjab", "Lahore", [31.5204, 74.3587], 69, "2001-Present"],
+  ["Arif_Habib", "Arif Habib", "Entrepreneur", "Sindh", "Karachi", [24.8607, 67.0011], 58, "2001-Present"],
+  ["Sadruddin_Hashwani", "Sadruddin Hashwani", "Entrepreneur", "Balochistan", "Quetta", [30.1798, 66.975], 57, "1971-2000"],
+  ["Mian_Muhammad_Mansha", "Mian Muhammad Mansha", "Entrepreneur", "Punjab", "Lahore", [31.5204, 74.3587], 67, "1971-2000"],
+  ["Salim_Ghauri", "Salim Ghauri", "Entrepreneur", "Punjab", "Lahore", [31.5204, 74.3587], 52, "2001-Present"],
+  ["Sania_Nishtar", "Sania Nishtar", "Public Health", "Khyber Pakhtunkhwa", "Peshawar", [34.0151, 71.5249], 68, "2001-Present"],
+  ["Yasmin_Rashid", "Yasmin Rashid", "Public Health", "Punjab", "Lahore", [31.5204, 74.3587], 54, "2001-Present"],
+  ["Faisal_Edhi", "Faisal Edhi", "Humanitarian", "Sindh", "Karachi", [24.8607, 67.0011], 55, "2001-Present"],
+  ["Fatima_Bhutto", "Fatima Bhutto", "Writer", "Sindh", "Larkana", [27.557, 68.2028], 56, "2001-Present"],
+  ["Nighat_Dad", "Nighat Dad", "Jurist", "Punjab", "Lahore", [31.5204, 74.3587], 55, "2001-Present"],
+  ["Khalida_Brohi", "Khalida Brohi", "Social Reformer", "Balochistan", "Khuzdar", [27.8, 66.6167], 52, "2001-Present"],
+  ["Shehzad_Roy", "Shehzad Roy", "Musician", "Sindh", "Karachi", [24.8607, 67.0011], 62, "2001-Present"],
+  ["Abrar-ul-Haq", "Abrar-ul-Haq", "Musician", "Punjab", "Narowal", [32.1, 74.88], 55, "2001-Present"],
+  ["Jehan_Ara", "Jehan Ara", "Entrepreneur", "Sindh", "Karachi", [24.8607, 67.0011], 53, "2001-Present"],
+  ["Sultana_Siddiqui", "Sultana Siddiqui", "Media", "Sindh", "Karachi", [24.8607, 67.0011], 58, "2001-Present"],
+  ["Ziauddin_Yousafzai", "Ziauddin Yousafzai", "Educator", "Khyber Pakhtunkhwa", "Mingora", [34.7717, 72.3602], 54, "2001-Present"],
+  ["Aitzaz_Ahsan", "Aitzaz Ahsan", "Jurist", "Punjab", "Lahore", [31.5204, 74.3587], 61, "1971-2000"],
+  ["Tina_Sani", "Tina Sani", "Musician", "Sindh", "Karachi", [24.8607, 67.0011], 53, "1971-2000"],
+  ["Riz_Ahmed", "Riz Ahmed", "Actor", "Sindh", "Karachi", [24.8607, 67.0011], 61, "2001-Present"],
+  ["Asif_Ali_Zardari", "Asif Ali Zardari", "Political Leader", "Sindh", "Nawabshah", [26.2442, 68.41], 66, "2001-Present"],
+  ["Arif_Alvi", "Arif Alvi", "Political Leader", "Sindh", "Karachi", [24.8607, 67.0011], 62, "2001-Present"],
+  ["Mamnoon_Hussain", "Mamnoon Hussain", "Political Leader", "Sindh", "Karachi", [24.8607, 67.0011], 55, "2001-Present"],
+  ["Bilawal_Bhutto_Zardari", "Bilawal Bhutto Zardari", "Political Leader", "Sindh", "Karachi", [24.8607, 67.0011], 58, "2001-Present"],
+  ["Maryam_Nawaz", "Maryam Nawaz", "Political Leader", "Punjab", "Lahore", [31.5204, 74.3587], 57, "2001-Present"],
+  ["Hina_Rabbani_Khar", "Hina Rabbani Khar", "Political Leader", "Punjab", "Multan", [30.1575, 71.5249], 54, "2001-Present"],
+  ["Sartaj_Aziz", "Sartaj Aziz", "Political Leader", "Khyber Pakhtunkhwa", "Mardan", [34.1986, 72.0404], 55, "1971-2000"],
+  ["Abdul_Malik_Baloch", "Abdul Malik Baloch", "Political Leader", "Balochistan", "Turbat", [26.0023, 63.0503], 54, "2001-Present"],
+  ["Mir_Hasil_Bizenjo", "Mir Hasil Bizenjo", "Political Leader", "Balochistan", "Khuzdar", [27.8, 66.6167], 53, "2001-Present"],
+  ["Jam_Kamal_Khan", "Jam Kamal Khan", "Political Leader", "Balochistan", "Lasbela", [25.8706, 66.7129], 52, "2001-Present"],
+  ["Abdul_Quddus_Bizenjo", "Abdul Quddus Bizenjo", "Political Leader", "Balochistan", "Awaran", [26.4568, 65.2314], 51, "2001-Present"],
+  ["Sanaullah_Zehri", "Sanaullah Zehri", "Political Leader", "Balochistan", "Khuzdar", [27.8, 66.6167], 50, "2001-Present"],
+  ["Yousaf_Raza_Gillani", "Yousaf Raza Gillani", "Political Leader", "Punjab", "Multan", [30.1575, 71.5249], 60, "2001-Present"],
+  ["Fakhar_Zaman", "Fakhar Zaman", "Athlete", "Khyber Pakhtunkhwa", "Mardan", [34.1986, 72.0404], 54, "2001-Present"],
+  ["Mohammad_Rizwan_(cricketer)", "Mohammad Rizwan", "Athlete", "Khyber Pakhtunkhwa", "Peshawar", [34.0151, 71.5249], 63, "2001-Present"],
+  ["Haris_Rauf", "Haris Rauf", "Athlete", "Punjab", "Rawalpindi", [33.5651, 73.0169], 55, "2001-Present"],
+  ["Saim_Ayub", "Saim Ayub", "Athlete", "Sindh", "Karachi", [24.8607, 67.0011], 49, "2001-Present"],
+  ["Shadab_Khan", "Shadab Khan", "Athlete", "Punjab", "Mianwali", [32.5839, 71.537], 57, "2001-Present"],
+  ["Naseem_Hameed", "Naseem Hameed", "Athlete", "Sindh", "Karachi", [24.8607, 67.0011], 50, "2001-Present"],
+  ["Arooj_Aftab", "Arooj Aftab", "Musician", "Punjab", "Lahore", [31.5204, 74.3587], 59, "2001-Present"],
+  ["Saba_Qamar", "Saba Qamar", "Actor", "Punjab", "Gujranwala", [32.1877, 74.1945], 59, "2001-Present"],
+  ["Samina_Peerzada", "Samina Peerzada", "Actor", "Punjab", "Lahore", [31.5204, 74.3587], 53, "1971-2000"],
+  ["Nabeel_Qureshi", "Nabeel Qureshi", "Artist", "Sindh", "Karachi", [24.8607, 67.0011], 49, "2001-Present"],
+  ["Sarmad_Khoosat", "Sarmad Khoosat", "Artist", "Punjab", "Lahore", [31.5204, 74.3587], 54, "2001-Present"],
+];
+
+entries.push(...extraEntries.map((entry) => [...entry, ""]));
+
 const fallbackBio = (name, category, city) =>
   `${name} is included as a ${category.toLowerCase()} connected to ${city}, with a source-backed profile prepared from public reference data.`;
 
@@ -123,18 +216,56 @@ const sourceFor = (title) => `https://en.wikipedia.org/wiki/${title}`;
 
 async function fetchSummary(title) {
   const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "Zameen-e-Danish local prototype data generator",
-    },
-  });
-  if (!response.ok) return null;
-  return response.json();
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "Zameen-e-Danish local prototype data generator",
+        },
+      });
+      if (!response.ok) return null;
+      return response.json();
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)));
+    }
+  }
+  return null;
+}
+
+async function fetchPageImage(title) {
+  const url = new URL("https://en.wikipedia.org/w/api.php");
+  url.searchParams.set("action", "query");
+  url.searchParams.set("titles", title);
+  url.searchParams.set("prop", "pageimages");
+  url.searchParams.set("piprop", "thumbnail");
+  url.searchParams.set("pithumbsize", "330");
+  url.searchParams.set("format", "json");
+  url.searchParams.set("origin", "*");
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Zameen-e-Danish local prototype data generator",
+      },
+    });
+    if (!response.ok) return "";
+    const json = await response.json();
+    const page = Object.values(json?.query?.pages ?? {})[0];
+    return page?.thumbnail?.source ?? "";
+  } catch {
+    return "";
+  }
 }
 
 const people = [];
-for (const [title, name, category, province, city, coordinates, impactScore, era, urduName] of entries) {
+const seenNames = new Set();
+for (const [title, name, category, province, city, coordinates, impactScore, era] of entries) {
+  if (seenNames.has(name)) continue;
+  seenNames.add(name);
   const summary = await fetchSummary(title);
+  const portrait =
+    summary?.thumbnail?.source ??
+    summary?.originalimage?.source ??
+    (await fetchPageImage(title));
   const lifeDates = summary?.description?.match(/\(([^)]*(?:19|20|18)[^)]*)\)/)?.[1] ?? "";
   const bio = summary?.extract
     ? summary.extract.split(". ").slice(0, 2).join(". ").replace(/\.$/, "") + "."
@@ -142,18 +273,17 @@ for (const [title, name, category, province, city, coordinates, impactScore, era
   people.push({
     id: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
     name,
-    urduName,
+    urduName: "",
     category,
     province,
     city,
     coordinates,
+    areaName: `${city}, ${province}`,
+    topWork: summary?.description ?? `${category} associated with ${city}`,
     lifeDates: lifeDates || "See source",
     impactScore,
     era,
-    portrait:
-      summary?.thumbnail?.source ??
-      summary?.originalimage?.source ??
-      "",
+    portrait,
     bio,
     achievements: [
       summary?.description ? summary.description.replace(/^Pakistani /i, "Pakistani ") : `${category} associated with ${city}`,
@@ -182,7 +312,7 @@ const categories = [...new Set(people.map((person) => person.category))].sort();
 const provinces = [...new Set(people.map((person) => person.province))].sort();
 const eras = ["Pre-1947", "1947-1970", "1971-2000", "2001-Present"];
 
-const output = `export const categories = ${JSON.stringify(categories, null, 2)};\n\nexport const provinces = ${JSON.stringify(provinces, null, 2)};\n\nexport const eras = ${JSON.stringify(eras, null, 2)};\n\nexport const personalities = ${JSON.stringify(people, null, 2)};\n\nexport function minimumScoreForZoom(zoom) {\n  if (zoom < 5) return 90;\n  if (zoom < 6.5) return 75;\n  if (zoom < 8) return 60;\n  if (zoom < 9.5) return 50;\n  return 0;\n}\n\nexport function tierForScore(score) {\n  if (score >= 90) return \"legendary\";\n  if (score >= 75) return \"major\";\n  if (score >= 60) return \"regional\";\n  return \"local\";\n}\n`;
+const output = `export const categories = ${JSON.stringify(categories, null, 2)};\n\nexport const provinces = ${JSON.stringify(provinces, null, 2)};\n\nexport const eras = ${JSON.stringify(eras, null, 2)};\n\nexport const personalities = ${JSON.stringify(people, null, 2)};\n\nexport function minimumScoreForMapZoom(zoom) {\n  if (zoom < 5.6) return 90;\n  if (zoom < 6.6) return 78;\n  if (zoom < 7.8) return 66;\n  if (zoom < 9.2) return 55;\n  if (zoom < 10.8) return 46;\n  return 0;\n}\n\nexport function maxPeoplePerCityForZoom(zoom) {\n  if (zoom < 5.8) return 2;\n  if (zoom < 6.8) return 3;\n  if (zoom < 8.2) return 5;\n  if (zoom < 9.6) return 8;\n  if (zoom < 11) return 14;\n  return 999;\n}\n\nexport function tierForScore(score) {\n  if (score >= 90) return \"legendary\";\n  if (score >= 75) return \"major\";\n  if (score >= 60) return \"regional\";\n  return \"local\";\n}\n\nfunction seededUnit(id, salt) {\n  let hash = 2166136261;\n  const text = id + salt;\n  for (let index = 0; index < text.length; index += 1) {\n    hash ^= text.charCodeAt(index);\n    hash = Math.imul(hash, 16777619);\n  }\n  return ((hash >>> 0) % 10000) / 10000;\n}\n\nexport function displayCoordinatesFor(person, index, visiblePeople) {\n  const samePlace = visiblePeople.filter((candidate) => candidate.city === person.city && candidate.province === person.province);\n  if (samePlace.length < 2) return person.coordinates;\n  const placeIndex = Math.max(0, samePlace.findIndex((candidate) => candidate.id === person.id));\n  const density = Math.min(0.11, 0.026 + samePlace.length * 0.006);\n  const angle = seededUnit(person.id, \"angle\") * Math.PI * 2;\n  const radius = density * (0.35 + seededUnit(person.id, \"radius\") * 0.65);\n  const lane = 1 + Math.floor(placeIndex / 9) * 0.35;\n  return [\n    person.coordinates[0] + Math.sin(angle) * radius * lane,\n    person.coordinates[1] + Math.cos(angle) * radius * lane,\n  ];\n}\n`;
 
 await fs.writeFile("src/data.js", output);
 console.log(`Wrote ${people.length} people to src/data.js`);

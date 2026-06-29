@@ -1,46 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import L from "leaflet";
-import { MapContainer, Marker, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
-import {
-  BookOpen,
-  ChevronDown,
-  Clock3,
-  Filter,
-  LocateFixed,
-  MapPin,
-  Search,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { GeoJSON, MapContainer, Marker, TileLayer, Tooltip, useMapEvents } from "react-leaflet";
+import { ChevronDown, Clock3, Filter, LocateFixed, MapPin, Search } from "lucide-react";
+import pakistanBoundary from "./pakistanBoundary.json";
 import {
   categories,
+  displayCoordinatesFor,
   eras,
-  minimumScoreForZoom,
+  maxPeoplePerCityForZoom,
+  minimumScoreForMapZoom,
   personalities,
   provinces,
   tierForScore,
 } from "./data.js";
 
 const pakistanBounds = [
-  [23.35, 60.7],
-  [37.2, 77.2],
+  [23.25, 60.55],
+  [37.35, 77.35],
 ];
-
-const zoomToDepth = (mapZoom) => {
-  if (mapZoom < 6) return 4.5;
-  if (mapZoom < 7) return 5.5;
-  if (mapZoom < 8.5) return 7;
-  if (mapZoom < 10) return 8.5;
-  return 10;
-};
-
-const depthToMapZoom = (depth) => {
-  if (depth < 5) return 5;
-  if (depth < 6.5) return 6;
-  if (depth < 8) return 7.5;
-  if (depth < 9.5) return 9;
-  return 10.5;
-};
 
 function initialsFor(name) {
   return name
@@ -63,7 +40,7 @@ function Avatar({ person, size = "regular" }) {
   return (
     <span className={`avatar avatar--${size}`}>
       <span className="avatar__fallback">{initialsFor(person.name)}</span>
-      {!failed ? (
+      {!failed && person.portrait ? (
         <img
           className={loaded ? "is-loaded" : ""}
           src={person.portrait}
@@ -81,20 +58,20 @@ function markerIconFor(person, selected) {
   const image = person.portrait
     ? `<img src="${person.portrait}" alt="" onerror="this.style.display='none'" />`
     : "";
+
   return L.divIcon({
     className: "",
     html: `
       <button class="map-person-marker map-person-marker--${tier} ${selected ? "is-selected" : ""}" aria-label="${person.name}">
-        <span class="map-person-marker__halo"></span>
         <span class="map-person-marker__avatar">
           <span>${initialsFor(person.name)}</span>
           ${image}
         </span>
-        <strong>${person.impactScore}</strong>
+        ${selected ? `<strong>${person.impactScore}</strong>` : ""}
       </button>
     `,
-    iconSize: [54, 54],
-    iconAnchor: [27, 27],
+    iconSize: selected ? [58, 58] : [44, 44],
+    iconAnchor: selected ? [29, 29] : [22, 22],
   });
 }
 
@@ -102,7 +79,7 @@ function SelectControl({ icon: Icon, value, onChange, label, options }) {
   return (
     <label className="control-field">
       <span>
-        <Icon size={14} />
+        <Icon size={13} />
         {label}
       </span>
       <ChevronDown className="select-chevron" size={14} />
@@ -118,38 +95,28 @@ function SelectControl({ icon: Icon, value, onChange, label, options }) {
   );
 }
 
-function MapZoomSync({ zoom, setZoom }) {
-  const map = useMap();
-
-  useEffect(() => {
-    const targetZoom = depthToMapZoom(zoom);
-    if (Math.abs(map.getZoom() - targetZoom) > 0.35) {
-      map.flyTo(map.getCenter(), targetZoom, { duration: 0.45 });
-    }
-  }, [map, zoom]);
-
+function MapZoomWatcher({ setMapZoom }) {
   useMapEvents({
     zoomend(event) {
-      setZoom(zoomToDepth(event.target.getZoom()));
+      setMapZoom(event.target.getZoom());
     },
   });
 
   return null;
 }
 
-function PakistanMap({ people, selectedId, setSelectedId, zoom, setZoom }) {
-  const selectedPerson = people.find((person) => person.id === selectedId) ?? people[0];
-
+function PakistanMap({ people, selectedId, setSelectedId, setMapZoom }) {
   return (
-    <section className="map-stage map-stage--slippy" aria-label="Zoomable Pakistan knowledge map">
+    <section className="map-stage" aria-label="Pakistan atlas map">
       <MapContainer
         className="slippy-map"
-        center={[30.3753, 69.3451]}
-        zoom={depthToMapZoom(zoom)}
+        center={[31.15, 69.35]}
+        zoom={5.55}
         minZoom={5}
-        maxZoom={12}
+        maxZoom={13}
         maxBounds={pakistanBounds}
-        maxBoundsViscosity={0.72}
+        maxBoundsViscosity={0.82}
+        attributionControl={false}
         scrollWheelZoom
         zoomControl
       >
@@ -157,107 +124,95 @@ function PakistanMap({ people, selectedId, setSelectedId, zoom, setZoom }) {
           attribution='&copy; OpenStreetMap contributors &copy; CARTO'
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
-        <MapZoomSync zoom={zoom} setZoom={setZoom} />
+        <GeoJSON
+          data={pakistanBoundary}
+          interactive={false}
+          style={{
+            color: "#01411c",
+            fillColor: "#01411c",
+            fillOpacity: 0,
+            opacity: 1,
+            weight: 3,
+          }}
+        />
+        <MapZoomWatcher setMapZoom={setMapZoom} />
         {people.map((person, index) => {
           const selected = person.id === selectedId;
           return (
             <Marker
               key={person.id}
-              position={person.coordinates}
+              position={displayCoordinatesFor(person, index, people)}
               icon={markerIconFor(person, selected)}
+              zIndexOffset={selected ? 1000 : person.impactScore}
               eventHandlers={{
                 click: () => setSelectedId(person.id),
               }}
             >
               <Tooltip direction="top" offset={[0, -18]} opacity={1}>
                 <strong>{person.name}</strong>
-                <span>{person.city} / impact {person.impactScore}</span>
+                <span>
+                  {person.city} / {person.category}
+                </span>
               </Tooltip>
             </Marker>
           );
         })}
       </MapContainer>
-
-      <div className="map-readout">
-        <span>Zoomable map detail</span>
-        <strong>{people.length}</strong>
-        <span>visible at this depth</span>
-      </div>
-
-      <label className="zoom-surface">
-        <span>Zoom depth: {depthLabelForZoom(zoom)}</span>
-        <input
-          type="range"
-          min="4"
-          max="11"
-          step="0.5"
-          value={zoom}
-          onChange={(event) => setZoom(Number(event.target.value))}
-        />
-        <em>showing impact score &gt;= {minimumScoreForZoom(zoom)}</em>
-      </label>
-
-      {selectedPerson && (
-        <div className="map-callout">
-          <Avatar person={selectedPerson} size="regular" />
-          <div>
-            <span>{selectedPerson.city}</span>
-            <strong>{selectedPerson.name}</strong>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
 
-function depthLabelForZoom(zoom) {
-  if (zoom < 5) return "National";
-  if (zoom < 6.5) return "Province";
-  if (zoom < 8) return "City";
-  if (zoom < 9.5) return "Local";
-  return "Deep archive";
-}
-
-function ProfilePanel({ person, onClose }) {
+function ProfilePanel({ person }) {
   if (!person) {
     return (
       <aside className="profile profile--empty" aria-label="Profile panel">
-        <Sparkles size={22} />
-        <p className="eyebrow">Awaiting signal</p>
-        <h2>Select a face on Pakistan</h2>
-        <p>Use depth, search, and filters to move from national icons into regional knowledge.</p>
+        <p className="eyebrow">Selection</p>
+        <h2>No profile visible</h2>
+        <p>Zoom in or loosen filters to reveal more source-backed personalities.</p>
       </aside>
     );
   }
 
   return (
     <aside className="profile" aria-label={`${person.name} profile`}>
-      <button className="icon-button close-button" type="button" onClick={onClose} aria-label="Close profile">
-        <X size={18} />
-      </button>
       <div className="profile-hero">
         <Avatar person={person} size="hero" />
         <div>
-          <p className="eyebrow">{person.category} / {person.city}</p>
+          <p className="eyebrow">{person.category}</p>
           <h2>{person.name}</h2>
-          <p className="urdu-name" lang="ur" dir="rtl">{person.urduName}</p>
-        </div>
-        <div className={`impact-badge impact-badge--${tierForScore(person.impactScore)}`}>
-          <strong>{person.impactScore}</strong>
-          <span>impact</span>
+          <span>{person.city}</span>
         </div>
       </div>
 
-      <div className="profile-meta">
-        <span><MapPin size={14} /> {person.province}</span>
-        <span><Clock3 size={14} /> {person.lifeDates}</span>
-        <span><LocateFixed size={14} /> {person.era}</span>
+      <div className="impact-badge">
+        <strong>{person.impactScore}</strong>
+        <span>relevance</span>
       </div>
+
+      <div className="profile-meta">
+        <span>
+          <Filter size={14} /> {person.category}
+        </span>
+        <span>
+          <MapPin size={14} /> {person.areaName ?? `${person.city}, ${person.province}`}
+        </span>
+        <span>
+          <Clock3 size={14} /> {person.lifeDates}
+        </span>
+        <span>
+          <LocateFixed size={14} /> {person.era}
+        </span>
+      </div>
+
+      <section className="profile-feature">
+        <h3>Top work</h3>
+        <p>{person.topWork ?? person.achievements[0]}</p>
+      </section>
 
       <p className="bio">{person.bio}</p>
 
       <section>
-        <h3>Verified signal</h3>
+        <h3>Signal</h3>
         <ul className="achievement-list">
           {person.achievements.map((achievement) => (
             <li key={achievement}>{achievement}</li>
@@ -277,7 +232,7 @@ function ProfilePanel({ person, onClose }) {
       </section>
 
       <section>
-        <h3>Related minds</h3>
+        <h3>Related</h3>
         <div className="related-list">
           {person.relatedPeople.map((related) => (
             <span key={related}>{related}</span>
@@ -293,16 +248,13 @@ export default function App() {
   const [category, setCategory] = useState("All");
   const [province, setProvince] = useState("All");
   const [era, setEra] = useState("All");
-  const [zoom, setZoom] = useState(4.5);
+  const [mapZoom, setMapZoom] = useState(5.4);
   const [selectedId, setSelectedId] = useState(personalities[0].id);
-
-  const activeMinimumScore = minimumScoreForZoom(zoom);
 
   const filteredPeople = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
     return personalities
-      .filter((person) => person.impactScore >= activeMinimumScore)
       .filter((person) => category === "All" || person.category === category)
       .filter((person) => province === "All" || person.province === province)
       .filter((person) => era === "All" || person.era === era)
@@ -310,7 +262,6 @@ export default function App() {
         if (!normalizedQuery) return true;
         return [
           person.name,
-          person.urduName,
           person.category,
           person.city,
           person.province,
@@ -322,124 +273,105 @@ export default function App() {
           .includes(normalizedQuery);
       })
       .sort((a, b) => b.impactScore - a.impactScore);
-  }, [activeMinimumScore, category, era, province, query]);
+  }, [category, era, province, query]);
+
+  const visiblePeople = useMemo(() => {
+    const minimumScore = minimumScoreForMapZoom(mapZoom);
+    const zoomVisible = filteredPeople.filter((person) => person.impactScore >= minimumScore);
+
+    const guaranteedByProvince = [];
+    const provincesToGuarantee = province === "All" ? provinces : [province];
+    for (const provinceName of provincesToGuarantee) {
+      guaranteedByProvince.push(
+        ...filteredPeople
+          .filter((person) => person.province === provinceName)
+          .slice(0, 5)
+      );
+    }
+
+    const guaranteedIds = new Set(guaranteedByProvince.map((person) => person.id));
+    const combined = [
+      ...guaranteedByProvince,
+      ...zoomVisible.filter((person) => !guaranteedIds.has(person.id)),
+    ].sort((a, b) => b.impactScore - a.impactScore);
+
+    const cityCounts = new Map();
+    const maxPerCity = province === "All" ? maxPeoplePerCityForZoom(mapZoom) : Math.max(5, maxPeoplePerCityForZoom(mapZoom));
+    return combined.filter((person) => {
+      const key = `${person.province}/${person.city}`;
+      const nextCount = (cityCounts.get(key) ?? 0) + 1;
+      cityCounts.set(key, nextCount);
+      return nextCount <= maxPerCity;
+    });
+  }, [filteredPeople, mapZoom, province]);
+
 
   useEffect(() => {
-    if (!filteredPeople.length) {
+    if (!visiblePeople.length) {
       setSelectedId(null);
       return;
     }
-    if (!filteredPeople.some((person) => person.id === selectedId)) {
-      setSelectedId(filteredPeople[0].id);
+    if (!visiblePeople.some((person) => person.id === selectedId)) {
+      setSelectedId(visiblePeople[0].id);
     }
-  }, [filteredPeople, selectedId]);
+  }, [selectedId, visiblePeople]);
 
-  const selectedPerson = filteredPeople.find((person) => person.id === selectedId) ?? filteredPeople[0] ?? null;
-  const visibleLegendary = filteredPeople.filter((person) => person.impactScore >= 90).length;
+  const selectedPerson = visiblePeople.find((person) => person.id === selectedId) ?? visiblePeople[0] ?? null;
+
   return (
     <main className="atlas">
-      <div className="ambient ambient--one" />
-      <div className="ambient ambient--two" />
-
-      <header className="topbar">
-        <div className="brand-lockup">
-          <div className="brand-mark">ذ</div>
-          <div>
-            <p className="eyebrow">Pakistan atlas of great minds</p>
+      <aside className="left-rail" aria-label="Atlas controls">
+        <section className="command-panel">
+          <header className="topbar">
             <h1>Zameen-e-Danish</h1>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      <section className="command-panel" aria-label="Atlas controls">
-        <div className="search-box">
-          <Search size={18} />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search people, cities, fields..."
-            type="search"
-          />
-        </div>
-        <div className="filter-grid">
-          <SelectControl icon={Filter} label="Field" value={category} onChange={setCategory} options={categories} />
-          <SelectControl icon={MapPin} label="Province" value={province} onChange={setProvince} options={provinces} />
-          <SelectControl icon={Clock3} label="Era" value={era} onChange={setEra} options={eras} />
-        </div>
-        <div className="stat-strip">
-          <div>
-            <strong>{filteredPeople.length}</strong>
-            <span>visible</span>
+          <div className="search-box">
+            <Search size={18} />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search name, city, field..."
+              type="search"
+            />
           </div>
-          <div>
-            <strong>{personalities.length}</strong>
-            <span>archive</span>
+
+          <div className="filter-grid">
+            <SelectControl icon={Filter} label="Field" value={category} onChange={setCategory} options={categories} />
+            <SelectControl icon={MapPin} label="Province" value={province} onChange={setProvince} options={provinces} />
+            <SelectControl icon={Clock3} label="Era" value={era} onChange={setEra} options={eras} />
           </div>
-          <div>
-            <strong>{visibleLegendary}</strong>
-            <span>legendary</span>
+
+          <div className="result-list" aria-label="Visible people">
+            {visiblePeople.slice(0, 22).map((person) => (
+              <button
+                className={`result-row ${person.id === selectedId ? "is-active" : ""}`}
+                type="button"
+                key={person.id}
+                onClick={() => setSelectedId(person.id)}
+              >
+                <Avatar person={person} size="tiny" />
+                <span>
+                  <strong>{person.name}</strong>
+                  <small>{person.category} / {person.city}</small>
+                </span>
+              </button>
+            ))}
+            {!visiblePeople.length && (
+              <p className="empty-results">No visible profiles. Zoom in or loosen filters.</p>
+            )}
           </div>
-        </div>
-        <div className="depth-tabs" aria-label="Depth presets">
-          {[
-            ["National", 4.5],
-            ["Province", 5.5],
-            ["City", 7],
-            ["Local", 8.5],
-            ["Archive", 10],
-          ].map(([label, value]) => (
-            <button
-              key={label}
-              className={depthLabelForZoom(zoom) === label || (label === "Archive" && zoom >= 9.5) ? "is-active" : ""}
-              type="button"
-              onClick={() => setZoom(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="result-list" aria-label="Visible people">
-          {filteredPeople.slice(0, 14).map((person) => (
-            <button
-              className={`result-row ${person.id === selectedId ? "is-active" : ""}`}
-              type="button"
-              key={person.id}
-              onClick={() => {
-                setSelectedId(person.id);
-              }}
-            >
-              <Avatar person={person} size="tiny" />
-              <span>
-                <strong>{person.name}</strong>
-                <small>{person.category} / {person.city}</small>
-              </span>
-              <em>{person.impactScore}</em>
-            </button>
-          ))}
-          {!filteredPeople.length && (
-            <p className="empty-results">No profiles match this signal. Increase depth or loosen filters.</p>
-          )}
-        </div>
-      </section>
+        </section>
+      </aside>
 
       <PakistanMap
-        people={filteredPeople}
+        people={visiblePeople}
         selectedId={selectedId}
-        setSelectedId={(id) => {
-          setSelectedId(id);
-        }}
-        zoom={zoom}
-        setZoom={setZoom}
+        setSelectedId={setSelectedId}
+        setMapZoom={setMapZoom}
       />
 
-      <ProfilePanel person={selectedPerson} onClose={() => setSelectedId(null)} />
-
-      <footer className="legend-bar" aria-label="Data sources">
-        <span><BookOpen size={14} /> {personalities.length} Wikipedia-linked profiles</span>
-        <span><i className="mini-dot mini-dot--legendary" /> national icons</span>
-        <span><i className="mini-dot mini-dot--major" /> provincial leaders</span>
-        <span><i className="mini-dot mini-dot--regional" /> city/local archive</span>
-      </footer>
+      <ProfilePanel person={selectedPerson} />
     </main>
   );
 }
